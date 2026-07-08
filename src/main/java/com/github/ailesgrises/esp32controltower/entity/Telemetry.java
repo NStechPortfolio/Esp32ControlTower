@@ -29,5 +29,5 @@ public class Telemetry {
     private Double temperature; // 温度
 
     @Column(nullable = false)
-    private Long timestamp; // タイムスタンプ
+    private String timestamp; // タイムスタンプ
 }

@@ -9,5 +9,5 @@ public class TelemetryRequest {
     private Double latitude; // 緯度
     private Double longitude; // 経度
     private Double temperature; // 温度
-    private Long timestamp; // タイムスタンプ
+    private String timestamp; // タイムスタンプ
 }
