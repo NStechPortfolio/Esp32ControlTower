@@ -1,0 +1,43 @@
+services:
+  # --- Database ---
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: control_tower
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  # --- Backend ---
+  backend:
+    build: .
+    container_name: esp32-control-tower-backend
+    ports:
+      - "8080:8080"
+    command: ./gradlew bootRun
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/control_tower
+    depends_on:
+      - postgres-db
+
+  # --- Frontend ---
+  frontend:
+    image: node:20-alpine
+    container_name: esp32-control-tower-frontend
+    volumes:
+      - ../Esp32ControlTowerViewer:/app
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - WATCHPACK_POLLING=true
+    tty: true
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 3000"
+    # command: tail -f /dev/null
+
+volumes:
+  postgres-data:

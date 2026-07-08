@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Esp32ControlTower
+  datasource:
+    url: jdbc:postgresql://postgres-db:5432/control_tower
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
