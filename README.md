@@ -1,17 +1,82 @@
-# 疑似人工衛星管制塔システム
+# ESP32疑似人工衛星管制塔システム (IoT Telemetry System)
 
-## システム概要
+本プロジェクトは、疑似人工衛星(ESP32機体)から送信される、宇宙空間を模したリアルタイムなテレメトリデータ(位置、高精度時刻、環境温度)を受信・蓄積し、デジタル地球儀(Cesium.js)上へハンズフリーで3Dプロットする疑似人工衛星管制塔システムです。
 
-- Docker でwebバックエンドサーバ(Java)、フロントエンドサーバ(Typescript + Vue.js)、DBサーバ(Postgresql)
-- ESP32にGPS とサーモセンサを実装し、10秒に一度「位置情報、温度、現在時刻」をバックエンドサーバに送信する。
-- Java/SpringBoot でWebSocket を実装する。
-	- "/api/telemetry" でESP32 からのPOST リクエストを処理する。
-	- "/api/telemetry/history" でVue.js からのGET リクエストを処理する。
-- Vue.js で現在の位置情報と温度情報を表示する。
-	- Cesium.js を使って現在の場所を画面表示する。
-- Postgresql でESP32 から送信された情報をDB に格納する。
+IoT組み込み(C++)、高速通信(WebSocket)、webバックエンド(Java)、webフロントエンド(Vue.js + Cesium.js + Typescript)、インフラ(Docker)にいたる全レイヤーをフルスタックにコード化し、高いスケーラビリティと保守性を両立した「システムとしての調和」をテーマに開発しました。
 
-## テスト方法
+---
+
+## システムアーキテクチャ・技術スタック
+
+本システムは、開発環境に依存しない動作環境の構築ため、地上局コンポーネントをすべてマルチコンテナで完全コード化しています。
+
 ```
-$ docker compose up -d
+[ 疑似人工衛星 (ESP32) ]
+│  (WiFi / HTTP POST)
+▼
+[ 地上局システム (Dockerコンテナ群) ]
+├── ① Web Backend (Spring Boot 3.4.5 / Java 21)
+│     ├── REST API : テレメトリデータの受信用
+│     └── WebSocket: フロントエンドへのリアルタイム配信
+│
+├── ② Database (PostgreSQL)
+│
+└── ③ Frontend (Vue 3 / TypeScript / Vite)
+└── Cesium.js: 3Dデジタル地球儀へのリアルタイム・カメラトラッキング
 ```
+
+### 疑似人工衛星(Edge / Firmware)
+* **Microcontroller:** ESP32 (C++ / Arduino framework)
+* **Peripherals:** * GPSモジュール (GT-502MGG-N みちびき2機(194/195)対応) -> *人工衛星よりUTC時刻および現在地を抽出*
+  * 温度センサ(ADT7410) -> *I2C通信16-bit高解像度モードによる±0.5°C高精度機体温度測定*
+
+### 地上局(Backend / Infrastructure)
+* **Backend Framework:** Spring Boot 3.4.5 (Java 21)
+* **Real-time Pipeline:** WebSocket (STOMP/Native)
+* **Database:** PostgreSQL
+* **Infrastructure:** Docker / Docker Compose (マルチコンテナ構成)
+
+### 管制画面(Frontend / Visualization)
+* **Frontend Framework:** Vue 3 (Composition API / `<script setup>`)
+* **Language:** TypeScript
+* **Build Tool:** Vite
+* **3D GIS Engine:** Cesium.js (via `vite-plugin-cesium`)
+
+---
+
+## クイックスタート
+
+本システムはマルチリポジトリ構成となっております。以下のコマンドを実行してください。
+
+```bash
+mkdir IoTControlTower
+cd IoTControlTower
+git clone https://github.com/NStechPortfolio/Esp32ControlTower
+git clone https://github.com/NStechPortfolio/Esp32ControlTowerViewer
+
+cd Esp32ControlTower
+
+docker compose up -d
+```
+
+管制タワー画面: http://localhost:3000  
+地上局API: http://localhost:8080  
+
+## API仕様
+```
+POST /api/telemetry : ESP32機体からの最新データ受信用 (JSON)
+GET  /api/telemetry/history : 過去の軌道・環境ログ取得用(tools/postman.sh で実行可能)
+WS   /ws/telemetry : 管制画面へのリアルタイム配信パイプライン
+
+// テレメトリデータ構造
+{
+  "satelliteId": "ESP32-SATELLITE-01",
+  "latitude": 35.6812,
+  "longitude": 139.7671,
+  "temperature": 24.58,
+  "timestamp": "2026/07/07 12:34:56.000"
+}
+```
+
+## 動作イメージ
+※ 撮影が完了していないため、2026/7/10(金) までの更新とさせてください。(実装は全て完了済み)
