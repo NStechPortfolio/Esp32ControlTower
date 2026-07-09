@@ -12,32 +12,38 @@ IoT組み込み(C++)、高速通信(WebSocket)、webバックエンド(Java)、w
 
 ```
 [ 疑似人工衛星 (ESP32) ]
-│  (WiFi / HTTP POST)
-▼
+
+    │  (WiFi / HTTP POST)
+    │
+    │
+    ▼
+
 [ 地上局システム (Dockerコンテナ群) ]
-├── ① Web Backend (Spring Boot 3.4.5 / Java 21)
-│     ├── REST API : テレメトリデータの受信用
-│     └── WebSocket: フロントエンドへのリアルタイム配信
-│
-├── ② Database (PostgreSQL)
-│
-└── ③ Frontend (Vue 3 / TypeScript / Vite)
-└── Cesium.js: 3Dデジタル地球儀へのリアルタイム・カメラトラッキング
+
+    ├── ① Web Backend (Spring Boot 3.4.5 / Java 21)
+    │     ├── REST API : テレメトリデータの受信用
+    │     └── WebSocket: フロントエンドへのリアルタイム配信
+    │
+    ├── ② Database (PostgreSQL)
+    │
+    └── ③ Frontend (Vue 3 / TypeScript / Vite)
+      └── Cesium.js: 3Dデジタル地球儀へのリアルタイム・カメラトラッキング
 ```
 
 ### 疑似人工衛星(Edge / Firmware)
-* **Microcontroller:** ESP32 (C++ / Arduino framework)
-* **Peripherals:** * GPSモジュール (GT-502MGG-N みちびき2機(194/195)対応) -> *人工衛星よりUTC時刻および現在地を抽出*
+* **Microcontroller:** ESP32-DevKitC-32E (C++ / Arduino framework)
+* **Peripherals:**
+	* GPSモジュール (GT-502MGG-N みちびき2機(194/195)対応) -> *人工衛星よりUTC時刻および現在地を抽出*
   * 温度センサ(ADT7410) -> *I2C通信16-bit高解像度モードによる±0.5°C高精度機体温度測定*
 
 ### 地上局(Backend / Infrastructure)
 * **Backend Framework:** Spring Boot 3.4.5 (Java 21)
 * **Real-time Pipeline:** WebSocket (STOMP/Native)
 * **Database:** PostgreSQL
-* **Infrastructure:** Docker / Docker Compose (マルチコンテナ構成)
+* **Infrastructure:** Docker Compose
 
 ### 管制画面(Frontend / Visualization)
-* **Frontend Framework:** Vue 3 (Composition API / `<script setup>`)
+* **Frontend Framework:** Vue 3
 * **Language:** TypeScript
 * **Build Tool:** Vite
 * **3D GIS Engine:** Cesium.js (via `vite-plugin-cesium`)
